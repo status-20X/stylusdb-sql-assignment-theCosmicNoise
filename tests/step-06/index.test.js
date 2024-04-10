@@ -20,6 +20,7 @@ test("Parse SQL Query", () => {
     joinTable: null,
     joinType: null,
     groupByFields: null,
+    orderByFields: null,
     hasAggregateWithoutGroupBy: false,
     whereClauses: [],
   });
@@ -45,6 +46,7 @@ test("Parse SQL Query with WHERE Clause", () => {
     joinTable: null,
     joinType: null,
     groupByFields: null,
+    orderByFields: null,
     hasAggregateWithoutGroupBy: false,
     whereClauses: [
       {
@@ -75,6 +77,7 @@ test("Parse SQL Query with Multiple WHERE Clauses", () => {
     joinTable: null,
     joinType: null,
     groupByFields: null,
+    orderByFields: null,
     hasAggregateWithoutGroupBy: false,
     whereClauses: [
       {
