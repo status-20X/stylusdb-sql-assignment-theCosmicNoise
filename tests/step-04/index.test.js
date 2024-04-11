@@ -18,6 +18,8 @@ test("Parse SQL Query", () => {
     table: "student",
     joinCondition: null,
     groupByFields: null,
+    limit: null,
+    isDistinct: false,
     orderByFields: null,
     hasAggregateWithoutGroupBy: false,
     joinTable: null,

@@ -15,12 +15,14 @@ test("Parse SQL Query", () => {
   expect(parsed).toEqual({
     fields: ["id", "name"],
     table: "student",
+    isDistinct: false,
     joinCondition: null,
     groupByFields: null,
     orderByFields: null,
     hasAggregateWithoutGroupBy: false,
     joinTable: null,
     joinType: null,
+    limit: null,
     whereClauses: [],
   });
 });

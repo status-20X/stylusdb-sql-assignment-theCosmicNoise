@@ -15,9 +15,11 @@ test("Parse SQL Query", () => {
   const parsed = parseQuery(query);
   expect(parsed).toEqual({
     fields: ["id", "name"],
+    isDistinct: false,
     table: "student",
     joinCondition: null,
     joinTable: null,
+    limit: null,
     joinType: null,
     groupByFields: null,
     orderByFields: null,
@@ -42,6 +44,7 @@ test("Parse SQL Query with WHERE Clause", () => {
   expect(parsed).toEqual({
     fields: ["id", "name"],
     table: "student",
+    isDistinct: false,
     whereClauses: [
       {
         field: "age",
@@ -51,6 +54,7 @@ test("Parse SQL Query with WHERE Clause", () => {
     ],
     joinCondition: null,
     groupByFields: null,
+    limit: null,
     orderByFields: null,
     hasAggregateWithoutGroupBy: false,
     joinTable: null,
@@ -76,6 +80,8 @@ test("Parse SQL Query with Multiple WHERE Clauses", () => {
     joinTable: null,
     table: "student",
     joinType: null,
+    isDistinct: false,
+    limit: null,
     groupByFields: null,
     orderByFields: null,
     hasAggregateWithoutGroupBy: false,
