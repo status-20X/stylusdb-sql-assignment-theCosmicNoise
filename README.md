@@ -4,7 +4,7 @@
 A SQL database engine written in JavaScript
 </p>
 
-This is the base repository for cohort members to follow the tutorial and send in their own StylusDB SQL implementations. You can refer to a complete implementation @ [ChakshuGautam/stylusdb-sql](https://github.com/ChakshuGautam/stylusdb-sql).
+This is the base repository for cohort members to follow the tutorial and send in their own StylusDB SQL implementations.
 
 Follow the steps given in the documentation to create your own implementation and make those tests pass.
 
