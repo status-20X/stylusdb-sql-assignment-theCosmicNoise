@@ -114,8 +114,8 @@ function evaluateCondition(row, clause) {
   }
 
   // Parse row value and condition value based on their actual types
-  let conditionValue = parseValue(value);
   const rowValue = parseValue(row[field]);
+  let conditionValue = parseValue(value);
 
   if (operator === "LIKE") {
     // Transform SQL LIKE pattern to JavaScript RegExp pattern
@@ -128,8 +128,6 @@ function evaluateCondition(row, clause) {
   switch (operator) {
     case "=":
       return rowValue === conditionValue;
-    case ">":
-      return rowValue > conditionValue;
     case "<":
       return rowValue < conditionValue;
     case ">=":
@@ -138,6 +136,8 @@ function evaluateCondition(row, clause) {
       return rowValue <= conditionValue;
     case "!=":
       return rowValue !== conditionValue;
+    case ">":
+      return rowValue > conditionValue;
 
     default:
       throw new Error(`Unsupported operator: ${operator}`);
@@ -147,7 +147,7 @@ function evaluateCondition(row, clause) {
 // Helper function to parse value based on its apparent type
 function parseValue(value) {
   // Return null or undefined as is
-  if (value === undefined || value === null) {
+  if (value === null || value === undefined) {
     return value;
   }
 
@@ -192,12 +192,6 @@ function applyGroupBy(data, groupByFields, aggregateFunctions) {
         const value = parseFloat(row[aggField]);
 
         switch (aggFunc.toUpperCase()) {
-          case "MAX":
-            groupResults[groupKey].maxes[aggField] = Math.max(
-              groupResults[groupKey].maxes[aggField] || value,
-              value
-            );
-            break;
           case "SUM":
             groupResults[groupKey].sums[aggField] =
               (groupResults[groupKey].sums[aggField] || 0) + value;
@@ -205,6 +199,12 @@ function applyGroupBy(data, groupByFields, aggregateFunctions) {
           case "MIN":
             groupResults[groupKey].mins[aggField] = Math.min(
               groupResults[groupKey].mins[aggField] || value,
+              value
+            );
+            break;
+          case "MAX":
+            groupResults[groupKey].maxes[aggField] = Math.max(
+              groupResults[groupKey].maxes[aggField] || value,
               value
             );
             break;
@@ -267,15 +267,16 @@ async function executeSELECTQuery(query) {
     if (joinTable && joinCondition) {
       const joinData = await readCSV(`${joinTable}.csv`);
       switch (joinType.toUpperCase()) {
-        case "INNER":
-          data = performInnerJoin(data, joinData, joinCondition, fields, table);
-          break;
         case "LEFT":
           data = performLeftJoin(data, joinData, joinCondition, fields, table);
           break;
         case "RIGHT":
           data = performRightJoin(data, joinData, joinCondition, fields, table);
           break;
+        case "INNER":
+          data = performInnerJoin(data, joinData, joinCondition, fields, table);
+          break;
+
         default:
           throw new Error(`Unsupported JOIN type: ${joinType}`);
       }
@@ -301,6 +302,12 @@ async function executeSELECTQuery(query) {
             case "COUNT":
               result[field] = filteredData.length;
               break;
+            case "SUM":
+              result[field] = filteredData.reduce(
+                (acc, row) => acc + parseFloat(row[aggField]),
+                0
+              );
+              break;
             case "AVG":
               result[field] =
                 filteredData.reduce(
@@ -318,13 +325,6 @@ async function executeSELECTQuery(query) {
                 ...filteredData.map((row) => parseFloat(row[aggField]))
               );
               break;
-            case "SUM":
-              result[field] = filteredData.reduce(
-                (acc, row) => acc + parseFloat(row[aggField]),
-                0
-              );
-              break;
-
             // Additional aggregate functions can be handled here
           }
         }
@@ -356,9 +356,8 @@ async function executeSELECTQuery(query) {
       if (orderByFields) {
         orderedResults = groupResults.sort((a, b) => {
           for (let { fieldName, order } of orderByFields) {
-            if (a[fieldName] > b[fieldName]) return order === "ASC" ? 1 : -1;
-
             if (a[fieldName] < b[fieldName]) return order === "ASC" ? -1 : 1;
+            if (a[fieldName] > b[fieldName]) return order === "ASC" ? 1 : -1;
           }
           return 0;
         });
@@ -391,6 +390,7 @@ async function executeSELECTQuery(query) {
       if (limit !== null) {
         limitResults = distinctResults.slice(0, limit);
       }
+
       return limitResults;
     }
   } catch (error) {
