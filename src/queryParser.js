@@ -1,4 +1,7 @@
-function parseQuery(query) {
+/*
+Creating a Query Parser which can parse SQL `SELECT` Queries only.
+// */
+function parseSelectQuery(query) {
   try {
     // Trim the query to remove any leading/trailing whitespaces
     query = query.trim();
@@ -80,12 +83,11 @@ function parseQuery(query) {
       fields: fields.split(",").map((field) => field.trim()),
       table: table.trim(),
       whereClauses,
-
-      orderByFields,
       joinType,
       joinTable,
       joinCondition,
       groupByFields,
+      orderByFields,
       hasAggregateWithoutGroupBy,
       limit,
       isDistinct,
@@ -102,14 +104,23 @@ function checkAggregateWithoutGroupBy(query, groupByFields) {
 }
 
 function parseWhereClause(whereString) {
-  const conditionRegex = /(.*?)(=|!=|>|<|>=|<=)(.*)/;
+  const conditionRegex = /(.*?)(=|!=|>=|<=|>|<)(.*)/;
   return whereString.split(/ AND | OR /i).map((conditionString) => {
-    const match = conditionString.match(conditionRegex);
-    if (match) {
-      const [, field, operator, value] = match;
-      return { field: field.trim(), operator, value: value.trim() };
+    if (conditionString.includes(" LIKE ")) {
+      const [field, pattern] = conditionString.split(/\sLIKE\s/i);
+      return {
+        field: field.trim(),
+        operator: "LIKE",
+        value: pattern.trim().replace(/^'(.*)'$/, "$1"),
+      };
+    } else {
+      const match = conditionString.match(conditionRegex);
+      if (match) {
+        const [, field, operator, value] = match;
+        return { field: field.trim(), operator, value: value.trim() };
+      }
+      throw new Error("Invalid WHERE clause format");
     }
-    throw new Error("Invalid WHERE clause format");
   });
 }
 
@@ -136,4 +147,21 @@ function parseJoinClause(query) {
   };
 }
 
-module.exports = { parseQuery, parseJoinClause };
+function parseInsertQuery(query) {
+  const insertRegex = /INSERT INTO (\w+)\s\((.+)\)\sVALUES\s\((.+)\)/i;
+  const match = query.match(insertRegex);
+
+  if (!match) {
+    throw new Error("Invalid INSERT INTO syntax.");
+  }
+
+  const [, table, columns, values] = match;
+  return {
+    type: "INSERT",
+    table: table.trim(),
+    columns: columns.split(",").map((column) => column.trim()),
+    values: values.split(",").map((value) => value.trim()),
+  };
+}
+
+module.exports = { parseSelectQuery, parseJoinClause, parseInsertQuery };
